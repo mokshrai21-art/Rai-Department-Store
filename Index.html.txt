@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rai Department Store - Online Grocery & Rewards</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .gradient-bg { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+    .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0">
+
+  <!-- Header -->
+  <header class="gradient-bg text-white sticky top-0 z-40 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white text-green-700 p-2 rounded-full font-bold text-xl shadow">
+          <i class="fa-solid font-bold fa-store"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-xl tracking-tight leading-none">Rai Department Store</h1>
+          <p class="text-xs text-green-100 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>Local Home Delivery</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button onclick="openRewardsModal()" class="gold-gradient text-white px-3 py-1.5 rounded-full text-xs font-bold shadow flex items-center space-x-1.5 hover:opacity-90 transition">
+          <i class="fa-solid fa-ticket text-yellow-200"></i>
+          <span>Gift Locker: <span id="userCouponsDisplay" class="text-sm font-black underline">0</span></span>
+        </button>
+        <button onclick="toggleCart()" class="bg-white/20 hover:bg-white/30 p-2 rounded-full relative transition">
+          <i class="fa-solid fa-cart-shopping text-white text-lg"></i>
+          <span id="cartBadge" class="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-green-700 hidden">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Banner -->
+    <div class="gold-gradient rounded-2xl p-5 text-white shadow-lg mb-8 relative overflow-hidden">
+      <div class="relative z-10 max-w-lg">
+        <span class="bg-black/20 text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">Mega Loyalty Offer</span>
+        <h2 class="text-2xl font-black mt-2">Har ₹1,000 ke Order Par 1 Free Coupon!</h2>
+        <p class="text-sm mt-1 text-yellow-100">Collect Coupons & Redeem Guaranteed Rewards like Electric Kettles, Mixers & Air Fryers.</p>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+      <i class="fa-solid fa-basket-shopping text-green-600 mr-2"></i> Daily Essentials
+    </h3>
+    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div id="cartDrawer" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
+    <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+      <div class="p-4 gradient-bg text-white flex justify-between items-center">
+        <h3 class="font-bold text-lg"><i class="fa-solid fa-cart-shopping mr-2"></i> Your Shopping Cart</h3>
+        <button onclick="toggleCart()" class="text-white hover:text-gray-200 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+
+      <div class="p-4 border-t bg-gray-50">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+          <div class="flex justify-between text-xs font-bold text-amber-800">
+            <span>Coupon Calculation:</span>
+            <span id="couponEarnNotice">0 Coupons</span>
+          </div>
+          <div class="w-full bg-amber-200 h-2 rounded-full mt-2 overflow-hidden">
+            <div id="couponProgress" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
+          </div>
+          <p id="couponSubtext" class="text-[11px] text-amber-700 mt-1 text-center">Add ₹1,000 to earn your 1st Coupon!</p>
+        </div>
+
+        <div class="flex justify-between items-center text-lg font-bold mb-3">
+          <span>Total Bill:</span>
+          <span id="cartTotal" class="text-green-700">₹0</span>
+        </div>
+
+        <button onclick="openCheckoutModal()" class="w-full gradient-bg text-white py-3 rounded-xl font-bold shadow hover:opacity-95 transition">
+          Proceed to Checkout (Cash on Delivery)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-xl font-extrabold text-gray-800 mb-4 border-b pb-2">Complete Order</h3>
+      <form onsubmit="placeOrder(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
+          <input type="text" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" placeholder="Enter your name">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Delivery Address</label>
+          <textarea required rows="2" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" placeholder="House/Flat No., Landmark"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Payment Method</label>
+          <div class="p-3 border-2 border-green-600 bg-green-50 rounded-xl flex items-center space-x-3">
+            <i class="fa-solid fa-money-bill-1-wave text-green-600 text-xl"></i>
+            <div>
+              <p class="font-bold text-xs text-green-900">Cash on Delivery (COD)</p>
+              <p class="text-[10px] text-green-700">Pay cash or UPI at delivery doorstep</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex space-x-3 pt-2">
+          <button type="button" onclick="closeCheckoutModal()" class="w-1/2 py-2.5 border rounded-xl font-bold text-gray-600">Cancel</button>
+          <button type="submit" class="w-1/2 gradient-bg text-white py-2.5 rounded-xl font-bold shadow">Confirm Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Gift Locker Modal -->
+  <div id="rewardsModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-3 mb-3">
+        <h3 class="font-extrabold text-lg flex items-center"><i class="fa-solid fa-gift text-amber-500 mr-2"></i> Gift Locker</h3>
+        <button onclick="closeRewardsModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex justify-between items-center mb-4">
+        <span class="text-xs font-bold text-amber-800">Available Coupons:</span>
+        <span id="modalCouponBalance" class="text-lg font-black text-amber-600">0</span>
+      </div>
+      <div class="flex-1 overflow-y-auto space-y-3" id="rewardsList"></div>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      { id: 1, name: "Fortune Sunflower Oil (5L)", price: 750, img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=200" },
+      { id: 2, name: "Aashirvaad Atta (10kg)", price: 440, img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200" },
+      { id: 3, name: "Basmati Rice Premium (5kg)", price: 680, img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200" },
+      { id: 4, name: "Tata Tea Gold (1kg)", price: 520, img: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=200" },
+      { id: 5, name: "Amul Pure Ghee (1L)", price: 630, img: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=200" },
+      { id: 6, name: "Dry Fruits Celebration Pack", price: 990, img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200" }
+    ];
+
+    const rewards = [
+      { id: 1, name: "Free 1kg Sugar & Tea Pack", cost: 10, icon: "fa-mug-hot" },
+      { id: 2, name: "Non-Stick Fry Pan", cost: 25, icon: "fa-kitchen-set" },
+      { id: 3, name: "Electric Kettle (1.5L)", cost: 50, icon: "fa-bolt" },
+      { id: 4, name: "Smart Air Fryer / Blender", cost: 100, icon: "fa-dumpster-fire" }
+    ];
+
+    let cart = {};
+    let userCoupons = parseInt(localStorage.getItem('rai_coupons') || '0');
+
+    function init() {
+      renderProducts();
+      updateCartUI();
+      document.getElementById('userCouponsDisplay').innerText = userCoupons;
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = products.map(p => `
+        <div class="bg-white rounded-xl shadow-sm border p-3 flex flex-col justify-between">
+          <img src="${p.img}" class="h-28 object-cover rounded-lg mb-2 w-full">
+          <div>
+            <h4 class="font-bold text-sm text-gray-800 leading-snug">${p.name}</h4>
+            <p class="text-green-700 font-extrabold text-base mt-1">₹${p.price}</p>
+          </div>
+          <button onclick="addToCart(${p.id})" class="mt-3 w-full bg-green-50 text-green-700 hover:bg-green-600 hover:text-white font-bold py-1.5 rounded-lg text-xs transition border border-green-200">
+            + Add to Cart
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cartItems = document.getElementById('cartItems');
+      let total = 0;
+      let count = 0;
+      let html = '';
+
+      Object.keys(cart).forEach(id => {
+        const p = products.find(prod => prod.id == id);
+        const qty = cart[id];
+        total += p.price * qty;
+        count += qty;
+        html += `
+          <div class="flex items-center justify-between border-b pb-2">
+            <div>
+              <p class="font-bold text-xs">${p.name}</p>
+              <p class="text-xs text-gray-500">₹${p.price} x ${qty}</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="changeQty(${id}, -1)" class="w-6 h-6 border rounded font-bold text-xs">-</button>
+              <span class="text-xs font-bold">${qty}</span>
+              <button onclick="changeQty(${id}, 1)" class="w-6 h-6 border rounded font-bold text-xs">+</button>
+            </div>
+          </div>
+        `;
+      });
+
+      cartItems.innerHTML = html || '<p class="text-center text-gray-400 text-sm py-8">Your cart is empty!</p>';
+      document.getElementById('cartTotal').innerText = `₹${total}`;
+      document.getElementById('cartBadge').innerText = count;
+      document.getElementById('cartBadge').classList.toggle('hidden', count === 0);
+
+      // Coupons Progress
+      const couponsEarned = Math.floor(total / 1000);
+      const remainder = total % 1000;
+      document.getElementById('couponEarnNotice').innerText = `${couponsEarned} Coupon(s)`;
+      document.getElementById('couponProgress').style.width = `${(remainder / 1000) * 100}%`;
+      document.getElementById('couponSubtext').innerText = total === 0 ? "Add ₹1,000 to earn 1 Coupon!" : `Add ₹${1000 - remainder} more to get another Coupon!`;
+    }
+
+    function changeQty(id, delta) {
+      cart[id] += delta;
+      if (cart[id] <= 0) delete cart[id];
+      updateCartUI();
+    }
+
+    function toggleCart() { document.getElementById('cartDrawer').classList.toggle('hidden'); }
+    function openCheckoutModal() { 
+      if (Object.keys(cart).length === 0) return alert("Cart empty hai!");
+      document.getElementById('checkoutModal').classList.remove('hidden'); 
+    }
+    function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
+
+    function placeOrder(e) {
+      e.preventDefault();
+      let total = 0;
+      Object.keys(cart).forEach(id => {
+        const p = products.find(prod => prod.id == id);
+        total += p.price * cart[id];
+      });
+      const earned = Math.floor(total / 1000);
+      userCoupons += earned;
+      localStorage.setItem('rai_coupons', userCoupons);
+      document.getElementById('userCouponsDisplay').innerText = userCoupons;
+      
+      alert(`Order Successful (Cash on Delivery)!\nAapne ₹${total} ke order par ${earned} Coupon(s) jeete hain!`);
+      cart = {};
+      updateCartUI();
+      closeCheckoutModal();
+      toggleCart();
+    }
+
+    function openRewardsModal() {
+      document.getElementById('modalCouponBalance').innerText = userCoupons;
+      const list = document.getElementById('rewardsList');
+      list.innerHTML = rewards.map(r => `
+        <div class="border rounded-xl p-3 flex justify-between items-center ${userCoupons >= r.cost ? 'bg-green-50 border-green-300' : 'bg-gray-50'}">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid ${r.icon} text-amber-500 text-xl"></i>
+            <div>
+              <p class="font-bold text-xs">${r.name}</p>
+              <p class="text-[10px] text-gray-500">Requires ${r.cost} Coupons</p>
+            </div>
+          </div>
+          <button onclick="redeemReward(${r.cost})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${userCoupons >= r.cost ? 'bg-amber-500 text-white shadow' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}">
+            Redeem
+          </button>
+        </div>
+      `).join('');
+      document.getElementById('rewardsModal').classList.remove('hidden');
+    }
+
+    function closeRewardsModal() { document.getElementById('rewardsModal').classList.add('hidden'); }
+
+    function redeemReward(cost) {
+      if (userCoupons < cost) return alert("Aapke paas paryapt coupons nahi hain!");
+      userCoupons -= cost;
+      localStorage.setItem('rai_coupons', userCoupons);
+      document.getElementById('userCouponsDisplay').innerText = userCoupons;
+      openRewardsModal();
+      alert("Gift Redeem request send ho gayi hai! Dukan se aapko gift mil jayega.");
+    }
+
+    init();
+  </script>
+</body>
+</html>
